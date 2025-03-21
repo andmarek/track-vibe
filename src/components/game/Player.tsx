@@ -2,10 +2,10 @@
 
 import { useRef, useMemo, useEffect } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { RigidBody, useRapier } from '@react-three/rapier';
+import { RigidBody, useRapier, RapierRigidBody } from '@react-three/rapier';
 import { Mesh, Group, Euler, Vector3 } from 'three';
 import { useGameStore } from '@/lib/game/store';
-import { useKeyboardControls } from '@/lib/game/useKeyboardControls';
+import { useKeyboardControls } from '@react-three/drei';
 
 const MOVEMENT_SPEED = 5;
 const CAMERA_ROTATION_SPEED = 0.02;
@@ -33,14 +33,17 @@ interface RunningAnimation {
 
 export default function Player() {
   const playerRef = useRef<Group>(null);
-  const rigidBodyRef = useRef<any>(null);
+  const rigidBody = useRef<RapierRigidBody>(null);
   const bodyRef = useRef<Group>(null);
   const leftArmRef = useRef<Group>(null);
   const rightArmRef = useRef<Group>(null);
   const leftLegRef = useRef<Group>(null);
   const rightLegRef = useRef<Group>(null);
-  const { updatePlayerPosition, updatePlayerRotation } = useGameStore();
-  const controls = useKeyboardControls();
+  const { gameState, updateDistance, updatePlayerPosition, updatePlayerRotation } = useGameStore();
+  const canMove = gameState === 'RACING';
+
+  const [, getKeys] = useKeyboardControls();
+
   const { world } = useRapier();
   const animationTime = useRef(0);
   const isMoving = useRef(false);
@@ -122,18 +125,18 @@ export default function Player() {
     cameraAngle.current = 0;
   }, []);
 
-  useFrame((state, delta) => {
-    if (!rigidBodyRef.current) return;
+  useFrame(() => {
+    if (!rigidBody.current) return;
 
-    const rigidBody = rigidBodyRef.current;
-    const position = rigidBody.translation();
-    const rotation = rigidBody.rotation();
+    const { forward, backward, left, right } = getKeys();
+    const position = rigidBody.current.translation();
+    const rotation = rigidBody.current.rotation();
 
     // Handle camera rotation with arrow keys
-    if (controls.leftArrow) {
+    if (getKeys().leftArrow) {
       cameraAngle.current += CAMERA_ROTATION_SPEED;
     }
-    if (controls.rightArrow) {
+    if (getKeys().rightArrow) {
       cameraAngle.current -= CAMERA_ROTATION_SPEED;
     }
 
@@ -141,17 +144,19 @@ export default function Player() {
     let moveX = 0;
     let moveZ = 0;
 
-    if (controls.forward) {
-      moveZ = -MOVEMENT_SPEED; // Forward is -Z
-    }
-    if (controls.backward) {
-      moveZ = MOVEMENT_SPEED; // Backward is +Z
-    }
-    if (controls.left) {
-      moveX = -MOVEMENT_SPEED; // Left is -X
-    }
-    if (controls.right) {
-      moveX = MOVEMENT_SPEED; // Right is +X
+    if (canMove) {
+      if (forward) {
+        moveZ = -MOVEMENT_SPEED; // Forward is -Z
+      }
+      if (backward) {
+        moveZ = MOVEMENT_SPEED; // Backward is +Z
+      }
+      if (left) {
+        moveX = -MOVEMENT_SPEED; // Left is -X
+      }
+      if (right) {
+        moveX = MOVEMENT_SPEED; // Right is +X
+      }
     }
 
     // Calculate rotation based on movement direction
@@ -171,7 +176,6 @@ export default function Player() {
       isMoving.current = true;
     } else if (!isCurrentlyMoving && isMoving.current) {
       isMoving.current = false;
-      // Don't reset animation time here anymore
     }
 
     // Update camera to follow player
@@ -185,8 +189,8 @@ export default function Player() {
 
     // Apply movement while maintaining y position
     if (isCurrentlyMoving) {
-      const currentVelocity = rigidBody.linvel();
-      rigidBody.setLinvel(
+      const currentVelocity = rigidBody.current.linvel();
+      rigidBody.current.setLinvel(
         { 
           x: moveX, 
           y: currentVelocity.y,
@@ -244,17 +248,37 @@ export default function Player() {
       }
     }
 
-    // Update store with new position and rotation
+    // Update store with current position and rotation
     updatePlayerPosition([position.x, position.y, position.z]);
     updatePlayerRotation([rotation.x, rotation.y, rotation.z]);
+
+    // Update distance for race tracking
+    updateDistance(new Vector3(position.x, position.y, position.z));
+
+    if (canMove) {
+      const impulse = { x: 0, y: 0, z: 0 };
+      const torque = { x: 0, y: 0, z: 0 };
+
+      const speed = 0.5;
+      const rotationSpeed = 0.1;
+
+      if (forward) impulse.z = -speed;
+      if (backward) impulse.z = speed;
+      if (left) torque.y = rotationSpeed;
+      if (right) torque.y = -rotationSpeed;
+
+      rigidBody.current.applyImpulse(impulse, true);
+      rigidBody.current.applyTorqueImpulse(torque, true);
+    }
   });
 
   return (
-    <RigidBody 
-      ref={rigidBodyRef} 
+    <RigidBody
+      ref={rigidBody}
+      colliders="ball"
+      mass={1}
       position={[0, 1, 45]}
-      type="dynamic"
-      lockRotations={true}
+      enabledRotations={[false, true, false]}
     >
       <group ref={playerRef}>
         {/* Body */}
