@@ -137,31 +137,27 @@ export default function Player() {
       cameraAngle.current -= CAMERA_ROTATION_SPEED;
     }
 
-    // Update camera position based on angle
-    const cameraX = position.x + Math.sin(cameraAngle.current) * CAMERA_DISTANCE;
-    const cameraZ = position.z + Math.cos(cameraAngle.current) * CAMERA_DISTANCE;
-    camera.position.set(cameraX, CAMERA_HEIGHT, cameraZ);
-    camera.lookAt(position.x, position.y + 1, position.z);
-
-    // Calculate movement direction relative to camera angle
+    // Calculate movement in world space (independent of camera)
     let moveX = 0;
     let moveZ = 0;
 
     if (controls.forward) {
-      moveX += Math.sin(cameraAngle.current) * MOVEMENT_SPEED;
-      moveZ += Math.cos(cameraAngle.current) * MOVEMENT_SPEED;
+      moveZ = -MOVEMENT_SPEED; // Forward is -Z
     }
     if (controls.backward) {
-      moveX -= Math.sin(cameraAngle.current) * MOVEMENT_SPEED;
-      moveZ -= Math.cos(cameraAngle.current) * MOVEMENT_SPEED;
+      moveZ = MOVEMENT_SPEED; // Backward is +Z
     }
     if (controls.left) {
-      moveX += Math.sin(cameraAngle.current - Math.PI / 2) * MOVEMENT_SPEED;
-      moveZ += Math.cos(cameraAngle.current - Math.PI / 2) * MOVEMENT_SPEED;
+      moveX = -MOVEMENT_SPEED; // Left is -X
     }
     if (controls.right) {
-      moveX += Math.sin(cameraAngle.current + Math.PI / 2) * MOVEMENT_SPEED;
-      moveZ += Math.cos(cameraAngle.current + Math.PI / 2) * MOVEMENT_SPEED;
+      moveX = MOVEMENT_SPEED; // Right is +X
+    }
+
+    // Calculate rotation based on movement direction
+    if (moveX !== 0 || moveZ !== 0) {
+      const angle = Math.atan2(moveX, moveZ);
+      playerRef.current?.rotation.set(0, angle, 0);
     }
 
     const isCurrentlyMoving = moveX !== 0 || moveZ !== 0;
@@ -173,6 +169,15 @@ export default function Player() {
     } else if (!isCurrentlyMoving && isMoving.current) {
       isMoving.current = false;
     }
+
+    // Update camera to follow player
+    const cameraOffset = new Vector3(
+      Math.sin(cameraAngle.current) * CAMERA_DISTANCE,
+      CAMERA_HEIGHT,
+      Math.cos(cameraAngle.current) * CAMERA_DISTANCE
+    );
+    camera.position.copy(new Vector3(position.x, position.y, position.z).add(cameraOffset));
+    camera.lookAt(position.x, position.y + 1, position.z);
 
     // Apply movement while maintaining y position
     if (isCurrentlyMoving) {

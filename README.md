@@ -1,4 +1,14 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Track and Field - THE GAME!
+
+Track and Field the game is a three 3d game that runs on the web. Where you can be a track athelete and compete against others in a race to the finish line.
+
+# How to play
+- Go to this website (we will create this)
+- Create a plauyer name
+- You will be placed in a lobby on 1 of 8 lanes (1 lane per players)
+
+# Technologies
+- ThreeJs
 
 ## Getting Started
 
