@@ -164,10 +164,14 @@ export default function Player() {
 
     // Handle animation state changes
     if (isCurrentlyMoving && !isMoving.current) {
-      animationTime.current = 0;
+      // Only reset animation time when starting from a complete stop
+      if (animationTime.current >= 1) {
+        animationTime.current = 0;
+      }
       isMoving.current = true;
     } else if (!isCurrentlyMoving && isMoving.current) {
       isMoving.current = false;
+      // Don't reset animation time here anymore
     }
 
     // Update camera to follow player
@@ -192,7 +196,7 @@ export default function Player() {
       );
       
       // Update animation time when moving
-      animationTime.current += RUNNING_SPEED;
+      animationTime.current = (animationTime.current + RUNNING_SPEED) % 1;
 
       // Update all limb rotations
       if (bodyRef.current) {
@@ -211,12 +215,33 @@ export default function Player() {
         rightLegRef.current.rotation.set(...interpolateKeyframes(runningAnimation.rightLeg.keyframes, animationTime.current));
       }
     } else {
-      // Reset to default positions when not moving
-      if (bodyRef.current) bodyRef.current.rotation.set(0, 0, 0);
-      if (leftArmRef.current) leftArmRef.current.rotation.set(0, 0, 0);
-      if (rightArmRef.current) rightArmRef.current.rotation.set(0, 0, 0);
-      if (leftLegRef.current) leftLegRef.current.rotation.set(0, 0, 0);
-      if (rightLegRef.current) rightLegRef.current.rotation.set(0, 0, 0);
+      // When not moving, smoothly return to default position
+      const lerpFactor = 0.1;
+      if (bodyRef.current) {
+        bodyRef.current.rotation.x *= (1 - lerpFactor);
+        bodyRef.current.rotation.y *= (1 - lerpFactor);
+        bodyRef.current.rotation.z *= (1 - lerpFactor);
+      }
+      if (leftArmRef.current) {
+        leftArmRef.current.rotation.x *= (1 - lerpFactor);
+        leftArmRef.current.rotation.y *= (1 - lerpFactor);
+        leftArmRef.current.rotation.z *= (1 - lerpFactor);
+      }
+      if (rightArmRef.current) {
+        rightArmRef.current.rotation.x *= (1 - lerpFactor);
+        rightArmRef.current.rotation.y *= (1 - lerpFactor);
+        rightArmRef.current.rotation.z *= (1 - lerpFactor);
+      }
+      if (leftLegRef.current) {
+        leftLegRef.current.rotation.x *= (1 - lerpFactor);
+        leftLegRef.current.rotation.y *= (1 - lerpFactor);
+        leftLegRef.current.rotation.z *= (1 - lerpFactor);
+      }
+      if (rightLegRef.current) {
+        rightLegRef.current.rotation.x *= (1 - lerpFactor);
+        rightLegRef.current.rotation.y *= (1 - lerpFactor);
+        rightLegRef.current.rotation.z *= (1 - lerpFactor);
+      }
     }
 
     // Update store with new position and rotation
