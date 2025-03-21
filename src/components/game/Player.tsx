@@ -235,119 +235,67 @@ export default function Player() {
         {/* Body */}
         <group ref={bodyRef}>
           {/* Torso */}
-          <mesh castShadow receiveShadow position={[0, 0.7, 0]}>
-            <capsuleGeometry args={[0.2, 0.7, 6, 8]} />
+          <mesh castShadow receiveShadow position={[0, 0.6, 0]}>
+            <boxGeometry args={[0.6, 0.9, 0.3]} />
             <meshStandardMaterial color="#e53e3e" />
           </mesh>
 
           {/* Head */}
-          <mesh castShadow receiveShadow position={[0, 1.35, 0]}>
-            <sphereGeometry args={[0.2, 8, 8]} />
-            <meshStandardMaterial color="#e53e3e" />
-          </mesh>
-
-          {/* Neck */}
-          <mesh castShadow receiveShadow position={[0, 1.2, 0]}>
-            <capsuleGeometry args={[0.08, 0.15, 4, 4]} />
-            <meshStandardMaterial color="#e53e3e" />
-          </mesh>
-
-          {/* Shoulders */}
-          <mesh castShadow receiveShadow position={[0, 1.05, 0]}>
-            <capsuleGeometry args={[0.35, 0.15, 4, 4]} />
+          <mesh castShadow receiveShadow position={[0, 1.3, 0]}>
+            <sphereGeometry args={[0.35, 16, 16]} />
             <meshStandardMaterial color="#e53e3e" />
           </mesh>
 
           {/* Arms */}
-          <group ref={leftArmRef} position={[-0.35, 1.05, 0]}>
+          <group ref={leftArmRef} position={[-0.35, 0.9, 0]}>
             {/* Upper arm */}
-            <mesh castShadow receiveShadow>
-              <capsuleGeometry args={[0.08, 0.35, 4, 4]} />
-              <meshStandardMaterial color="#e53e3e" />
-            </mesh>
-            {/* Elbow */}
-            <mesh castShadow receiveShadow position={[0, -0.17, 0]}>
-              <sphereGeometry args={[0.1, 4, 4]} />
-              <meshStandardMaterial color="#e53e3e" />
-            </mesh>
-            {/* Forearm */}
-            <mesh castShadow receiveShadow position={[0, -0.34, 0]}>
-              <capsuleGeometry args={[0.06, 0.25, 4, 4]} />
+            <mesh castShadow receiveShadow position={[0, -0.2, 0]}>
+              <boxGeometry args={[0.2, 0.6, 0.2]} />
               <meshStandardMaterial color="#e53e3e" />
             </mesh>
             {/* Hand */}
-            <mesh castShadow receiveShadow position={[0, -0.45, 0]}>
-              <sphereGeometry args={[0.08, 4, 4]} />
+            <mesh castShadow receiveShadow position={[0, -0.5, 0]}>
+              <boxGeometry args={[0.2, 0.2, 0.2]} />
               <meshStandardMaterial color="#e53e3e" />
             </mesh>
           </group>
 
-          <group ref={rightArmRef} position={[0.35, 1.05, 0]}>
+          <group ref={rightArmRef} position={[0.35, 0.9, 0]}>
             {/* Upper arm */}
-            <mesh castShadow receiveShadow>
-              <capsuleGeometry args={[0.08, 0.35, 4, 4]} />
-              <meshStandardMaterial color="#e53e3e" />
-            </mesh>
-            {/* Elbow */}
-            <mesh castShadow receiveShadow position={[0, -0.17, 0]}>
-              <sphereGeometry args={[0.1, 4, 4]} />
-              <meshStandardMaterial color="#e53e3e" />
-            </mesh>
-            {/* Forearm */}
-            <mesh castShadow receiveShadow position={[0, -0.34, 0]}>
-              <capsuleGeometry args={[0.06, 0.25, 4, 4]} />
+            <mesh castShadow receiveShadow position={[0, -0.2, 0]}>
+              <boxGeometry args={[0.2, 0.6, 0.2]} />
               <meshStandardMaterial color="#e53e3e" />
             </mesh>
             {/* Hand */}
-            <mesh castShadow receiveShadow position={[0, -0.45, 0]}>
-              <sphereGeometry args={[0.08, 4, 4]} />
+            <mesh castShadow receiveShadow position={[0, -0.5, 0]}>
+              <boxGeometry args={[0.2, 0.2, 0.2]} />
               <meshStandardMaterial color="#e53e3e" />
             </mesh>
           </group>
 
           {/* Legs */}
-          <group ref={leftLegRef} position={[-0.12, 0.15, 0]}>
-            {/* Upper leg */}
-            <mesh castShadow receiveShadow>
-              <capsuleGeometry args={[0.08, 0.45, 4, 4]} />
-              <meshStandardMaterial color="#2d3748" />
-            </mesh>
-            {/* Knee */}
-            <mesh castShadow receiveShadow position={[0, -0.22, 0]}>
-              <sphereGeometry args={[0.1, 4, 4]} />
-              <meshStandardMaterial color="#2d3748" />
-            </mesh>
-            {/* Calf */}
-            <mesh castShadow receiveShadow position={[0, -0.44, 0]}>
-              <capsuleGeometry args={[0.06, 0.35, 4, 4]} />
+          <group ref={leftLegRef} position={[-0.15, 0.15, 0]}>
+            {/* Full leg */}
+            <mesh castShadow receiveShadow position={[0, -0.3, 0]}>
+              <boxGeometry args={[0.2, 0.6, 0.2]} />
               <meshStandardMaterial color="#2d3748" />
             </mesh>
             {/* Foot */}
-            <mesh castShadow receiveShadow position={[0, -0.65, 0]}>
-              <boxGeometry args={[0.12, 0.08, 0.25]} />
+            <mesh castShadow receiveShadow position={[0, -0.6, 0.05]}>
+              <boxGeometry args={[0.2, 0.2, 0.3]} />
               <meshStandardMaterial color="#2d3748" />
             </mesh>
           </group>
 
-          <group ref={rightLegRef} position={[0.12, 0.15, 0]}>
-            {/* Upper leg */}
-            <mesh castShadow receiveShadow>
-              <capsuleGeometry args={[0.08, 0.45, 4, 4]} />
-              <meshStandardMaterial color="#2d3748" />
-            </mesh>
-            {/* Knee */}
-            <mesh castShadow receiveShadow position={[0, -0.22, 0]}>
-              <sphereGeometry args={[0.1, 4, 4]} />
-              <meshStandardMaterial color="#2d3748" />
-            </mesh>
-            {/* Calf */}
-            <mesh castShadow receiveShadow position={[0, -0.44, 0]}>
-              <capsuleGeometry args={[0.06, 0.35, 4, 4]} />
+          <group ref={rightLegRef} position={[0.15, 0.15, 0]}>
+            {/* Full leg */}
+            <mesh castShadow receiveShadow position={[0, -0.3, 0]}>
+              <boxGeometry args={[0.2, 0.6, 0.2]} />
               <meshStandardMaterial color="#2d3748" />
             </mesh>
             {/* Foot */}
-            <mesh castShadow receiveShadow position={[0, -0.65, 0]}>
-              <boxGeometry args={[0.12, 0.08, 0.25]} />
+            <mesh castShadow receiveShadow position={[0, -0.6, 0.05]}>
+              <boxGeometry args={[0.2, 0.2, 0.3]} />
               <meshStandardMaterial color="#2d3748" />
             </mesh>
           </group>
