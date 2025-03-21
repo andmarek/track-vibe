@@ -20,54 +20,15 @@ export default function Environment() {
         </mesh>
       </RigidBody>
 
-      {/* Stadium Stands */}
-      {/* Left side stands */}
-      <RigidBody type="fixed">
-        <group position={[-TRACK_WIDTH - 5, 0, 0]}>
-          <mesh receiveShadow position={[0, 2, 0]}>
-            <boxGeometry args={[10, 4, TRACK_LENGTH]} />
-            <meshStandardMaterial color="#d4d4d8" /> {/* Light gray */}
-          </mesh>
-          {/* Seats */}
-          {Array.from({ length: 8 }).map((_, i) => (
-            <mesh 
-              key={`left-seat-row-${i}`} 
-              receiveShadow 
-              position={[0, 1 + i * 0.5, 0]} 
-              rotation={[0.3, 0, 0]}
-            >
-              <boxGeometry args={[10, 0.1, TRACK_LENGTH]} />
-              <meshStandardMaterial color={i % 2 === 0 ? "#dc2626" : "#71717a"} />
-            </mesh>
-          ))}
-        </group>
-      </RigidBody>
+      {/* Running track border (subtle terracotta) */}
+      <mesh receiveShadow rotation-x={-Math.PI / 2} position={[0, 0.005, 0]}>
+        <planeGeometry args={[TRACK_WIDTH + 4, TRACK_LENGTH + 4]} />
+        <meshStandardMaterial color="#c4846c" /> {/* Subtle terracotta */}
+      </mesh>
 
-      {/* Right side stands */}
-      <RigidBody type="fixed">
-        <group position={[TRACK_WIDTH + 5, 0, 0]}>
-          <mesh receiveShadow position={[0, 2, 0]}>
-            <boxGeometry args={[10, 4, TRACK_LENGTH]} />
-            <meshStandardMaterial color="#d4d4d8" />
-          </mesh>
-          {/* Seats */}
-          {Array.from({ length: 8 }).map((_, i) => (
-            <mesh 
-              key={`right-seat-row-${i}`} 
-              receiveShadow 
-              position={[0, 1 + i * 0.5, 0]} 
-              rotation={[0.3, 0, 0]}
-            >
-              <boxGeometry args={[10, 0.1, TRACK_LENGTH]} />
-              <meshStandardMaterial color={i % 2 === 0 ? "#dc2626" : "#71717a"} />
-            </mesh>
-          ))}
-        </group>
-      </RigidBody>
-
-      {/* Trees */}
+      {/* Trees in a more spread out pattern */}
       {Array.from({ length: 8 }).map((_, i) => (
-        <group key={`tree-left-${i}`} position={[-STADIUM_WIDTH/4, 0, -TRACK_LENGTH/2 + i * 15]}>
+        <group key={`tree-left-${i}`} position={[-STADIUM_WIDTH/2.5, 0, -TRACK_LENGTH/2 + i * 15]}>
           {/* Trunk */}
           <mesh receiveShadow position={[0, 2, 0]}>
             <cylinderGeometry args={[0.3, 0.4, 4]} />
@@ -75,14 +36,14 @@ export default function Environment() {
           </mesh>
           {/* Leaves */}
           <mesh receiveShadow position={[0, 4, 0]}>
-            <coneGeometry args={[1.5, 4, 8]} />
+            <coneGeometry args={[2, 5, 8]} />
             <meshStandardMaterial color="#166534" />
           </mesh>
         </group>
       ))}
 
       {Array.from({ length: 8 }).map((_, i) => (
-        <group key={`tree-right-${i}`} position={[STADIUM_WIDTH/4, 0, -TRACK_LENGTH/2 + i * 15]}>
+        <group key={`tree-right-${i}`} position={[STADIUM_WIDTH/2.5, 0, -TRACK_LENGTH/2 + i * 15]}>
           {/* Trunk */}
           <mesh receiveShadow position={[0, 2, 0]}>
             <cylinderGeometry args={[0.3, 0.4, 4]} />
@@ -90,7 +51,7 @@ export default function Environment() {
           </mesh>
           {/* Leaves */}
           <mesh receiveShadow position={[0, 4, 0]}>
-            <coneGeometry args={[1.5, 4, 8]} />
+            <coneGeometry args={[2, 5, 8]} />
             <meshStandardMaterial color="#166534" />
           </mesh>
         </group>
@@ -115,25 +76,29 @@ export default function Environment() {
             <meshStandardMaterial color="#737373" />
           </mesh>
           {/* Finish banner */}
-          <mesh receiveShadow position={[0, 5, 0]}>
+          <mesh receiveShadow position={[0, 5, 0]} rotation={[0, 0, 0]}>
             <planeGeometry args={[TRACK_WIDTH, 1]} />
             <meshStandardMaterial color="white" />
+            <mesh position={[0, 0, 0.01]}>
+              <planeGeometry args={[TRACK_WIDTH * 0.8, 0.4]} />
+              <meshStandardMaterial color="#111111" />
+            </mesh>
           </mesh>
         </group>
       </RigidBody>
 
-      {/* Background mountains */}
-      <group position={[0, 0, -STADIUM_LENGTH/2]}>
-        <mesh receiveShadow position={[-30, 15, -10]}>
-          <coneGeometry args={[20, 30, 4]} />
-          <meshStandardMaterial color="#1f2937" />
-        </mesh>
-        <mesh receiveShadow position={[0, 20, -20]}>
+      {/* Background mountains (more subtle) */}
+      <group position={[0, 0, -STADIUM_LENGTH/2 - 10]}>
+        <mesh receiveShadow position={[-40, 20, -20]}>
           <coneGeometry args={[25, 40, 4]} />
           <meshStandardMaterial color="#1f2937" />
         </mesh>
-        <mesh receiveShadow position={[30, 17, -15]}>
-          <coneGeometry args={[22, 35, 4]} />
+        <mesh receiveShadow position={[0, 25, -30]}>
+          <coneGeometry args={[30, 50, 4]} />
+          <meshStandardMaterial color="#1f2937" />
+        </mesh>
+        <mesh receiveShadow position={[40, 22, -25]}>
+          <coneGeometry args={[27, 45, 4]} />
           <meshStandardMaterial color="#1f2937" />
         </mesh>
       </group>
