@@ -1,21 +1,126 @@
 'use client';
 
-import { useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useRef, useMemo, useEffect } from 'react';
+import { useFrame, useThree } from '@react-three/fiber';
 import { RigidBody, useRapier } from '@react-three/rapier';
-import { Mesh } from 'three';
+import { Mesh, Group, Euler, Vector3 } from 'three';
 import { useGameStore } from '@/lib/game/store';
 import { useKeyboardControls } from '@/lib/game/useKeyboardControls';
 
 const MOVEMENT_SPEED = 5;
-const ROTATION_SPEED = 0.1;
+const CAMERA_ROTATION_SPEED = 0.02;
+const RUNNING_SPEED = 0.1;
+const CAMERA_DISTANCE = 8;
+const CAMERA_HEIGHT = 4;
+
+interface Keyframe {
+  time: number;
+  rotation: [number, number, number];
+}
+
+interface Animation {
+  rotation: [number, number, number];
+  keyframes: Keyframe[];
+}
+
+interface RunningAnimation {
+  leftLeg: Animation;
+  rightLeg: Animation;
+  leftArm: Animation;
+  rightArm: Animation;
+  body: Animation;
+}
 
 export default function Player() {
-  const playerRef = useRef<Mesh>(null);
+  const playerRef = useRef<Group>(null);
   const rigidBodyRef = useRef<any>(null);
+  const bodyRef = useRef<Group>(null);
+  const leftArmRef = useRef<Group>(null);
+  const rightArmRef = useRef<Group>(null);
+  const leftLegRef = useRef<Group>(null);
+  const rightLegRef = useRef<Group>(null);
   const { updatePlayerPosition, updatePlayerRotation } = useGameStore();
   const controls = useKeyboardControls();
   const { world } = useRapier();
+  const animationTime = useRef(0);
+  const isMoving = useRef(false);
+  const cameraAngle = useRef(0);
+  const { camera } = useThree();
+
+  // Create running animation keyframes
+  const runningAnimation = useMemo<RunningAnimation>(() => ({
+    body: {
+      rotation: [0, 0, 0],
+      keyframes: [
+        { time: 0, rotation: [0, 0, 0] },
+        { time: 0.5, rotation: [0.1, 0, 0] },
+        { time: 1, rotation: [0, 0, 0] },
+      ],
+    },
+    leftLeg: {
+      rotation: [0, 0, 0],
+      keyframes: [
+        { time: 0, rotation: [0, 0, 0] },
+        { time: 0.5, rotation: [Math.PI / 3, 0, 0] },
+        { time: 1, rotation: [0, 0, 0] },
+      ],
+    },
+    rightLeg: {
+      rotation: [0, 0, 0],
+      keyframes: [
+        { time: 0, rotation: [Math.PI / 3, 0, 0] },
+        { time: 0.5, rotation: [0, 0, 0] },
+        { time: 1, rotation: [Math.PI / 3, 0, 0] },
+      ],
+    },
+    leftArm: {
+      rotation: [0, 0, 0],
+      keyframes: [
+        { time: 0, rotation: [0, 0, -Math.PI / 3] },
+        { time: 0.5, rotation: [0, 0, Math.PI / 3] },
+        { time: 1, rotation: [0, 0, -Math.PI / 3] },
+      ],
+    },
+    rightArm: {
+      rotation: [0, 0, 0],
+      keyframes: [
+        { time: 0, rotation: [0, 0, Math.PI / 3] },
+        { time: 0.5, rotation: [0, 0, -Math.PI / 3] },
+        { time: 1, rotation: [0, 0, Math.PI / 3] },
+      ],
+    },
+  }), []);
+
+  // Helper function to interpolate between keyframes
+  const interpolateKeyframes = (keyframes: Keyframe[], time: number): [number, number, number] => {
+    if (!keyframes || keyframes.length === 0) {
+      return [0, 0, 0];
+    }
+
+    const t = time % 1;
+    const index = Math.floor(time * (keyframes.length - 1));
+    const nextIndex = (index + 1) % keyframes.length;
+    
+    const keyframe = keyframes[index];
+    const nextKeyframe = keyframes[nextIndex];
+    
+    if (!keyframe || !nextKeyframe) {
+      return [0, 0, 0];
+    }
+
+    return [
+      keyframe.rotation[0] + (nextKeyframe.rotation[0] - keyframe.rotation[0]) * t,
+      keyframe.rotation[1] + (nextKeyframe.rotation[1] - keyframe.rotation[1]) * t,
+      keyframe.rotation[2] + (nextKeyframe.rotation[2] - keyframe.rotation[2]) * t,
+    ];
+  };
+
+  // Initialize animation state
+  useEffect(() => {
+    animationTime.current = 0;
+    isMoving.current = false;
+    cameraAngle.current = 0;
+  }, []);
 
   useFrame((state, delta) => {
     if (!rigidBodyRef.current) return;
@@ -24,29 +129,89 @@ export default function Player() {
     const position = rigidBody.translation();
     const rotation = rigidBody.rotation();
 
-    // Calculate movement direction
+    // Handle camera rotation with arrow keys
+    if (controls.leftArrow) {
+      cameraAngle.current += CAMERA_ROTATION_SPEED;
+    }
+    if (controls.rightArrow) {
+      cameraAngle.current -= CAMERA_ROTATION_SPEED;
+    }
+
+    // Update camera position based on angle
+    const cameraX = position.x + Math.sin(cameraAngle.current) * CAMERA_DISTANCE;
+    const cameraZ = position.z + Math.cos(cameraAngle.current) * CAMERA_DISTANCE;
+    camera.position.set(cameraX, CAMERA_HEIGHT, cameraZ);
+    camera.lookAt(position.x, position.y + 1, position.z);
+
+    // Calculate movement direction relative to camera angle
     let moveX = 0;
     let moveZ = 0;
 
-    if (controls.forward) moveZ -= MOVEMENT_SPEED;
-    if (controls.backward) moveZ += MOVEMENT_SPEED;
-    if (controls.left) moveX -= MOVEMENT_SPEED;
-    if (controls.right) moveX += MOVEMENT_SPEED;
+    if (controls.forward) {
+      moveX += Math.sin(cameraAngle.current) * MOVEMENT_SPEED;
+      moveZ += Math.cos(cameraAngle.current) * MOVEMENT_SPEED;
+    }
+    if (controls.backward) {
+      moveX -= Math.sin(cameraAngle.current) * MOVEMENT_SPEED;
+      moveZ -= Math.cos(cameraAngle.current) * MOVEMENT_SPEED;
+    }
+    if (controls.left) {
+      moveX += Math.sin(cameraAngle.current - Math.PI / 2) * MOVEMENT_SPEED;
+      moveZ += Math.cos(cameraAngle.current - Math.PI / 2) * MOVEMENT_SPEED;
+    }
+    if (controls.right) {
+      moveX += Math.sin(cameraAngle.current + Math.PI / 2) * MOVEMENT_SPEED;
+      moveZ += Math.cos(cameraAngle.current + Math.PI / 2) * MOVEMENT_SPEED;
+    }
+
+    const isCurrentlyMoving = moveX !== 0 || moveZ !== 0;
+
+    // Handle animation state changes
+    if (isCurrentlyMoving && !isMoving.current) {
+      animationTime.current = 0;
+      isMoving.current = true;
+    } else if (!isCurrentlyMoving && isMoving.current) {
+      isMoving.current = false;
+    }
 
     // Apply movement while maintaining y position
-    if (moveX !== 0 || moveZ !== 0) {
-      // Get current velocity
+    if (isCurrentlyMoving) {
       const currentVelocity = rigidBody.linvel();
-      
-      // Set new velocity while preserving y (vertical) component
       rigidBody.setLinvel(
         { 
           x: moveX, 
-          y: currentVelocity.y, // Keep current vertical velocity
+          y: currentVelocity.y,
           z: moveZ 
         }, 
         true
       );
+      
+      // Update animation time when moving
+      animationTime.current += RUNNING_SPEED;
+
+      // Update all limb rotations
+      if (bodyRef.current) {
+        bodyRef.current.rotation.set(...interpolateKeyframes(runningAnimation.body.keyframes, animationTime.current));
+      }
+      if (leftArmRef.current) {
+        leftArmRef.current.rotation.set(...interpolateKeyframes(runningAnimation.leftArm.keyframes, animationTime.current));
+      }
+      if (rightArmRef.current) {
+        rightArmRef.current.rotation.set(...interpolateKeyframes(runningAnimation.rightArm.keyframes, animationTime.current));
+      }
+      if (leftLegRef.current) {
+        leftLegRef.current.rotation.set(...interpolateKeyframes(runningAnimation.leftLeg.keyframes, animationTime.current));
+      }
+      if (rightLegRef.current) {
+        rightLegRef.current.rotation.set(...interpolateKeyframes(runningAnimation.rightLeg.keyframes, animationTime.current));
+      }
+    } else {
+      // Reset to default positions when not moving
+      if (bodyRef.current) bodyRef.current.rotation.set(0, 0, 0);
+      if (leftArmRef.current) leftArmRef.current.rotation.set(0, 0, 0);
+      if (rightArmRef.current) rightArmRef.current.rotation.set(0, 0, 0);
+      if (leftLegRef.current) leftLegRef.current.rotation.set(0, 0, 0);
+      if (rightLegRef.current) rightLegRef.current.rotation.set(0, 0, 0);
     }
 
     // Update store with new position and rotation
@@ -59,40 +224,129 @@ export default function Player() {
       ref={rigidBodyRef} 
       position={[0, 1, 45]}
       type="dynamic"
-      lockRotations={true} // Prevent the player from tipping over
+      lockRotations={true}
     >
       <group ref={playerRef}>
         {/* Body */}
-        <mesh castShadow receiveShadow>
-          <capsuleGeometry args={[0.3, 1.2, 4, 8]} />
-          <meshStandardMaterial color="#e53e3e" />
-        </mesh>
+        <group ref={bodyRef}>
+          {/* Torso */}
+          <mesh castShadow receiveShadow position={[0, 0.7, 0]}>
+            <capsuleGeometry args={[0.2, 0.7, 6, 8]} />
+            <meshStandardMaterial color="#e53e3e" />
+          </mesh>
 
-        {/* Head */}
-        <mesh castShadow receiveShadow position={[0, 1.2, 0]}>
-          <sphereGeometry args={[0.3, 8, 8]} />
-          <meshStandardMaterial color="#e53e3e" />
-        </mesh>
+          {/* Head */}
+          <mesh castShadow receiveShadow position={[0, 1.35, 0]}>
+            <sphereGeometry args={[0.2, 8, 8]} />
+            <meshStandardMaterial color="#e53e3e" />
+          </mesh>
 
-        {/* Arms */}
-        <mesh castShadow receiveShadow position={[-0.4, 0.8, 0]} rotation={[0, 0, Math.PI / 4]}>
-          <capsuleGeometry args={[0.1, 0.6, 4, 4]} />
-          <meshStandardMaterial color="#e53e3e" />
-        </mesh>
-        <mesh castShadow receiveShadow position={[0.4, 0.8, 0]} rotation={[0, 0, -Math.PI / 4]}>
-          <capsuleGeometry args={[0.1, 0.6, 4, 4]} />
-          <meshStandardMaterial color="#e53e3e" />
-        </mesh>
+          {/* Neck */}
+          <mesh castShadow receiveShadow position={[0, 1.2, 0]}>
+            <capsuleGeometry args={[0.08, 0.15, 4, 4]} />
+            <meshStandardMaterial color="#e53e3e" />
+          </mesh>
 
-        {/* Legs */}
-        <mesh castShadow receiveShadow position={[-0.2, 0.2, 0]} rotation={[Math.PI / 4, 0, 0]}>
-          <capsuleGeometry args={[0.1, 0.8, 4, 4]} />
-          <meshStandardMaterial color="#2d3748" />
-        </mesh>
-        <mesh castShadow receiveShadow position={[0.2, 0.2, 0]} rotation={[Math.PI / 4, 0, 0]}>
-          <capsuleGeometry args={[0.1, 0.8, 4, 4]} />
-          <meshStandardMaterial color="#2d3748" />
-        </mesh>
+          {/* Shoulders */}
+          <mesh castShadow receiveShadow position={[0, 1.05, 0]}>
+            <capsuleGeometry args={[0.35, 0.15, 4, 4]} />
+            <meshStandardMaterial color="#e53e3e" />
+          </mesh>
+
+          {/* Arms */}
+          <group ref={leftArmRef} position={[-0.35, 1.05, 0]}>
+            {/* Upper arm */}
+            <mesh castShadow receiveShadow>
+              <capsuleGeometry args={[0.08, 0.35, 4, 4]} />
+              <meshStandardMaterial color="#e53e3e" />
+            </mesh>
+            {/* Elbow */}
+            <mesh castShadow receiveShadow position={[0, -0.17, 0]}>
+              <sphereGeometry args={[0.1, 4, 4]} />
+              <meshStandardMaterial color="#e53e3e" />
+            </mesh>
+            {/* Forearm */}
+            <mesh castShadow receiveShadow position={[0, -0.34, 0]}>
+              <capsuleGeometry args={[0.06, 0.25, 4, 4]} />
+              <meshStandardMaterial color="#e53e3e" />
+            </mesh>
+            {/* Hand */}
+            <mesh castShadow receiveShadow position={[0, -0.45, 0]}>
+              <sphereGeometry args={[0.08, 4, 4]} />
+              <meshStandardMaterial color="#e53e3e" />
+            </mesh>
+          </group>
+
+          <group ref={rightArmRef} position={[0.35, 1.05, 0]}>
+            {/* Upper arm */}
+            <mesh castShadow receiveShadow>
+              <capsuleGeometry args={[0.08, 0.35, 4, 4]} />
+              <meshStandardMaterial color="#e53e3e" />
+            </mesh>
+            {/* Elbow */}
+            <mesh castShadow receiveShadow position={[0, -0.17, 0]}>
+              <sphereGeometry args={[0.1, 4, 4]} />
+              <meshStandardMaterial color="#e53e3e" />
+            </mesh>
+            {/* Forearm */}
+            <mesh castShadow receiveShadow position={[0, -0.34, 0]}>
+              <capsuleGeometry args={[0.06, 0.25, 4, 4]} />
+              <meshStandardMaterial color="#e53e3e" />
+            </mesh>
+            {/* Hand */}
+            <mesh castShadow receiveShadow position={[0, -0.45, 0]}>
+              <sphereGeometry args={[0.08, 4, 4]} />
+              <meshStandardMaterial color="#e53e3e" />
+            </mesh>
+          </group>
+
+          {/* Legs */}
+          <group ref={leftLegRef} position={[-0.12, 0.15, 0]}>
+            {/* Upper leg */}
+            <mesh castShadow receiveShadow>
+              <capsuleGeometry args={[0.08, 0.45, 4, 4]} />
+              <meshStandardMaterial color="#2d3748" />
+            </mesh>
+            {/* Knee */}
+            <mesh castShadow receiveShadow position={[0, -0.22, 0]}>
+              <sphereGeometry args={[0.1, 4, 4]} />
+              <meshStandardMaterial color="#2d3748" />
+            </mesh>
+            {/* Calf */}
+            <mesh castShadow receiveShadow position={[0, -0.44, 0]}>
+              <capsuleGeometry args={[0.06, 0.35, 4, 4]} />
+              <meshStandardMaterial color="#2d3748" />
+            </mesh>
+            {/* Foot */}
+            <mesh castShadow receiveShadow position={[0, -0.65, 0]}>
+              <boxGeometry args={[0.12, 0.08, 0.25]} />
+              <meshStandardMaterial color="#2d3748" />
+            </mesh>
+          </group>
+
+          <group ref={rightLegRef} position={[0.12, 0.15, 0]}>
+            {/* Upper leg */}
+            <mesh castShadow receiveShadow>
+              <capsuleGeometry args={[0.08, 0.45, 4, 4]} />
+              <meshStandardMaterial color="#2d3748" />
+            </mesh>
+            {/* Knee */}
+            <mesh castShadow receiveShadow position={[0, -0.22, 0]}>
+              <sphereGeometry args={[0.1, 4, 4]} />
+              <meshStandardMaterial color="#2d3748" />
+            </mesh>
+            {/* Calf */}
+            <mesh castShadow receiveShadow position={[0, -0.44, 0]}>
+              <capsuleGeometry args={[0.06, 0.35, 4, 4]} />
+              <meshStandardMaterial color="#2d3748" />
+            </mesh>
+            {/* Foot */}
+            <mesh castShadow receiveShadow position={[0, -0.65, 0]}>
+              <boxGeometry args={[0.12, 0.08, 0.25]} />
+              <meshStandardMaterial color="#2d3748" />
+            </mesh>
+          </group>
+        </group>
       </group>
     </RigidBody>
   );
