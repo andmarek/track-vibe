@@ -24,9 +24,9 @@ export default function Track() {
         <mesh 
           receiveShadow 
           rotation-x={-Math.PI / 2} 
-          position={[0, -0.01, 0]}
+          position={[0, -0.02, 0]}
         >
-          <planeGeometry args={[200, 200]} />
+          <planeGeometry args={[TOTAL_LENGTH + 20, TOTAL_WIDTH + 20]} />
           <meshStandardMaterial color={GRASS_COLOR} />
         </mesh>
       </RigidBody>
@@ -37,7 +37,7 @@ export default function Track() {
           {/* Right straight */}
           <mesh 
             receiveShadow 
-            position={[OUTER_RADIUS - TRACK_WIDTH/2, 0, 0]} 
+            position={[OUTER_RADIUS - TRACK_WIDTH/2, -0.01, 0]} 
             rotation-x={-Math.PI / 2}
           >
             <planeGeometry args={[TRACK_WIDTH, STRAIGHT_LENGTH]} />
@@ -47,7 +47,7 @@ export default function Track() {
           {/* Left straight */}
           <mesh 
             receiveShadow 
-            position={[-OUTER_RADIUS + TRACK_WIDTH/2, 0, 0]} 
+            position={[-OUTER_RADIUS + TRACK_WIDTH/2, -0.01, 0]} 
             rotation-x={-Math.PI / 2}
           >
             <planeGeometry args={[TRACK_WIDTH, STRAIGHT_LENGTH]} />
@@ -57,14 +57,14 @@ export default function Track() {
           {/* Bottom curve */}
           <mesh
             receiveShadow
-            position={[0, 0, STRAIGHT_LENGTH/2]}
-            rotation-x={-Math.PI / 2}
+            position={[0, -0.01, STRAIGHT_LENGTH/2]}
+            rotation={[-Math.PI / 2, 0, Math.PI]}
           >
             <ringGeometry 
               args={[
                 INNER_RADIUS, 
                 OUTER_RADIUS, 
-                32, 
+                64, // Increased segments for smoother curves
                 1, 
                 0, 
                 Math.PI
@@ -76,20 +76,30 @@ export default function Track() {
           {/* Top curve */}
           <mesh
             receiveShadow
-            position={[0, 0, -STRAIGHT_LENGTH/2]}
-            rotation-x={-Math.PI / 2}
+            position={[0, -0.01, -STRAIGHT_LENGTH/2]}
+            rotation={[-Math.PI / 2, 0, 0]}
           >
             <ringGeometry 
               args={[
                 INNER_RADIUS, 
                 OUTER_RADIUS, 
-                32, 
+                64, // Increased segments for smoother curves
                 1, 
-                Math.PI, 
-                2 * Math.PI
+                0, 
+                Math.PI
               ]} 
             />
             <meshStandardMaterial color={TRACK_COLOR} />
+          </mesh>
+
+          {/* Inner field */}
+          <mesh
+            receiveShadow
+            position={[0, -0.015, 0]}
+            rotation-x={-Math.PI / 2}
+          >
+            <planeGeometry args={[INNER_RADIUS * 2, STRAIGHT_LENGTH]} />
+            <meshStandardMaterial color={GRASS_COLOR} />
           </mesh>
         </group>
 
