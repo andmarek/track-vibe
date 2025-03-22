@@ -16,7 +16,7 @@ export default function GameCanvas() {
   // Handle keyboard events for game state changes
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (gameState === 'READY') {
+      if (gameState === 'READY' && e.key.toLowerCase() === 'w') {
         startRace();
       } else if (gameState === 'FINISHED' && e.key.toLowerCase() === 'r') {
         resetGame();

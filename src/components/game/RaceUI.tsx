@@ -36,7 +36,7 @@ export default function RaceUI() {
       {gameState === 'READY' && (
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
           <h1 className="text-4xl font-bold text-white mb-4">100M SPRINT</h1>
-          <p className="text-2xl text-white">Press any key to start</p>
+          <p className="text-2xl text-white">Press W to start</p>
         </div>
       )}
 
