@@ -24,7 +24,7 @@ export default function Track() {
         <mesh 
           receiveShadow 
           rotation-x={-Math.PI / 2} 
-          position={[0, -0.02, 0]}
+          position={[0, -0.05, 0]}
         >
           <planeGeometry args={[TOTAL_LENGTH + 20, TOTAL_WIDTH + 20]} />
           <meshStandardMaterial color={GRASS_COLOR} />
@@ -37,7 +37,7 @@ export default function Track() {
           {/* Right straight */}
           <mesh 
             receiveShadow 
-            position={[OUTER_RADIUS - TRACK_WIDTH/2, -0.01, 0]} 
+            position={[OUTER_RADIUS - TRACK_WIDTH/2, 0, 0]} 
             rotation-x={-Math.PI / 2}
           >
             <planeGeometry args={[TRACK_WIDTH, STRAIGHT_LENGTH]} />
@@ -47,7 +47,7 @@ export default function Track() {
           {/* Left straight */}
           <mesh 
             receiveShadow 
-            position={[-OUTER_RADIUS + TRACK_WIDTH/2, -0.01, 0]} 
+            position={[-OUTER_RADIUS + TRACK_WIDTH/2, 0, 0]} 
             rotation-x={-Math.PI / 2}
           >
             <planeGeometry args={[TRACK_WIDTH, STRAIGHT_LENGTH]} />
@@ -57,14 +57,14 @@ export default function Track() {
           {/* Bottom curve */}
           <mesh
             receiveShadow
-            position={[0, -0.01, STRAIGHT_LENGTH/2]}
+            position={[0, 0, STRAIGHT_LENGTH/2]}
             rotation={[-Math.PI / 2, 0, Math.PI]}
           >
             <ringGeometry 
               args={[
                 INNER_RADIUS, 
                 OUTER_RADIUS, 
-                64, // Increased segments for smoother curves
+                64,
                 1, 
                 0, 
                 Math.PI
@@ -76,14 +76,14 @@ export default function Track() {
           {/* Top curve */}
           <mesh
             receiveShadow
-            position={[0, -0.01, -STRAIGHT_LENGTH/2]}
+            position={[0, 0, -STRAIGHT_LENGTH/2]}
             rotation={[-Math.PI / 2, 0, 0]}
           >
             <ringGeometry 
               args={[
                 INNER_RADIUS, 
                 OUTER_RADIUS, 
-                64, // Increased segments for smoother curves
+                64,
                 1, 
                 0, 
                 Math.PI
@@ -95,7 +95,7 @@ export default function Track() {
           {/* Inner field */}
           <mesh
             receiveShadow
-            position={[0, -0.015, 0]}
+            position={[0, -0.03, 0]}
             rotation-x={-Math.PI / 2}
           >
             <planeGeometry args={[INNER_RADIUS * 2, STRAIGHT_LENGTH]} />
@@ -106,23 +106,60 @@ export default function Track() {
         {/* Lane lines */}
         {Array.from({ length: 8 + 1 }).map((_, i) => {
           const xPos = -TRACK_WIDTH/2 + i * (TRACK_WIDTH / 8);
+          const LINE_THICKNESS = 0.1; // Slightly thicker lines
           return (
             <group key={`lane-${i}`}>
               {/* Right straight lane line */}
               <mesh
-                position={[OUTER_RADIUS - TRACK_WIDTH/2 + xPos, 0.01, 0]}
+                position={[OUTER_RADIUS - TRACK_WIDTH/2 + xPos, 0.05, 0]}
                 rotation-x={-Math.PI / 2}
               >
-                <planeGeometry args={[0.05, STRAIGHT_LENGTH]} />
+                <planeGeometry args={[LINE_THICKNESS, STRAIGHT_LENGTH]} />
                 <meshStandardMaterial color="white" />
               </mesh>
 
               {/* Left straight lane line */}
               <mesh
-                position={[-OUTER_RADIUS + TRACK_WIDTH/2 + xPos, 0.01, 0]}
+                position={[-OUTER_RADIUS + TRACK_WIDTH/2 + xPos, 0.05, 0]}
                 rotation-x={-Math.PI / 2}
               >
-                <planeGeometry args={[0.05, STRAIGHT_LENGTH]} />
+                <planeGeometry args={[LINE_THICKNESS, STRAIGHT_LENGTH]} />
+                <meshStandardMaterial color="white" />
+              </mesh>
+
+              {/* Bottom curve lane line */}
+              <mesh
+                position={[0, 0.05, STRAIGHT_LENGTH/2]}
+                rotation={[-Math.PI / 2, 0, Math.PI]}
+              >
+                <ringGeometry 
+                  args={[
+                    INNER_RADIUS + i * (TRACK_WIDTH / 8),
+                    INNER_RADIUS + i * (TRACK_WIDTH / 8) + LINE_THICKNESS,
+                    64,
+                    1,
+                    0,
+                    Math.PI
+                  ]} 
+                />
+                <meshStandardMaterial color="white" />
+              </mesh>
+
+              {/* Top curve lane line */}
+              <mesh
+                position={[0, 0.05, -STRAIGHT_LENGTH/2]}
+                rotation={[-Math.PI / 2, 0, 0]}
+              >
+                <ringGeometry 
+                  args={[
+                    INNER_RADIUS + i * (TRACK_WIDTH / 8),
+                    INNER_RADIUS + i * (TRACK_WIDTH / 8) + LINE_THICKNESS,
+                    64,
+                    1,
+                    0,
+                    Math.PI
+                  ]} 
+                />
                 <meshStandardMaterial color="white" />
               </mesh>
             </group>
@@ -131,10 +168,10 @@ export default function Track() {
 
         {/* Starting line */}
         <mesh
-          position={[OUTER_RADIUS - TRACK_WIDTH/2, 0.01, -STRAIGHT_LENGTH/2 + 1]}
+          position={[OUTER_RADIUS - TRACK_WIDTH/2, 0.05, -STRAIGHT_LENGTH/2 + 1]}
           rotation-x={-Math.PI / 2}
         >
-          <planeGeometry args={[TRACK_WIDTH, 0.1]} />
+          <planeGeometry args={[TRACK_WIDTH, 0.2]} />
           <meshStandardMaterial color="white" />
         </mesh>
 
@@ -143,7 +180,7 @@ export default function Track() {
           const xPos = OUTER_RADIUS - TRACK_WIDTH/2 + i * (TRACK_WIDTH / 8) + (TRACK_WIDTH / 16);
           return (
             <RigidBody type="fixed" key={`block-${i}`}>
-              <group position={[xPos, 0, -STRAIGHT_LENGTH/2 + 0.5]}>
+              <group position={[xPos, 0.1, -STRAIGHT_LENGTH/2 + 0.5]}>
                 <mesh position={[0, 0.1, 0]}>
                   <boxGeometry args={[0.4, 0.2, 0.4]} />
                   <meshStandardMaterial color="#444444" />
