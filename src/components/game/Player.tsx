@@ -157,10 +157,16 @@ export default function Player() {
 
     // Handle camera rotation with arrow keys
     if (cameraLeft) {
-      cameraAngle.current += CAMERA_ROTATION_SPEED;
+      cameraAngle.current -= CAMERA_ROTATION_SPEED;
+      if (playerRef.current) {
+        playerRef.current.rotation.y = cameraAngle.current;
+      }
     }
     if (cameraRight) {
-      cameraAngle.current -= CAMERA_ROTATION_SPEED;
+      cameraAngle.current += CAMERA_ROTATION_SPEED;
+      if (playerRef.current) {
+        playerRef.current.rotation.y = cameraAngle.current;
+      }
     }
 
     // Handle camera height with up/down arrows
@@ -177,8 +183,8 @@ export default function Player() {
 
     if (canMove && forward) {
       // Move in the direction the camera is facing
-      moveX = Math.sin(-cameraAngle.current) * MOVEMENT_SPEED;
-      moveZ = Math.cos(-cameraAngle.current) * -MOVEMENT_SPEED;
+      moveX = -Math.sin(cameraAngle.current) * MOVEMENT_SPEED;
+      moveZ = -Math.cos(cameraAngle.current) * MOVEMENT_SPEED;
     }
 
     const isCurrentlyMoving = moveX !== 0 || moveZ !== 0;
@@ -213,12 +219,6 @@ export default function Player() {
         }, 
         true
       );
-
-      // Make the player face the movement direction
-      if (playerRef.current) {
-        const angle = Math.atan2(moveX, -moveZ);
-        playerRef.current.rotation.y = angle;
-      }
       
       // Update animation time when moving
       animationTime.current = (animationTime.current + RUNNING_SPEED) % 1;
