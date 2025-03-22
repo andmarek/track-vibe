@@ -1,6 +1,12 @@
 import { create } from 'zustand';
 import { Vector3 } from 'three';
 
+// Import track dimensions
+const STRAIGHT_LENGTH = 97.256;
+const INNER_RADIUS = 27.082;
+const OUTER_RADIUS = 40.022;
+const TRACK_WIDTH = OUTER_RADIUS - INNER_RADIUS;
+
 export type GameState = 'READY' | 'SET' | 'RACING' | 'FINISHED';
 
 interface GameStore {
@@ -33,7 +39,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   raceStartTime: null,
   raceEndTime: null,
   distanceRemaining: 100, // 100 meters
-  playerPosition: [0, 1, 45],
+  playerPosition: [OUTER_RADIUS - TRACK_WIDTH/2 + TRACK_WIDTH/16, 1, STRAIGHT_LENGTH/2 - 1.5],
   playerRotation: [0, 0, 0],
 
   setGameState: (state) => set({ gameState: state }),
@@ -56,9 +62,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   updateDistance: (position: Vector3) => {
     // Calculate distance remaining based on player's Z position
-    // Assuming race starts at Z = 45 (player starting position) and ends at Z = -55
+    // Assuming race starts at the new starting line position
     const totalDistance = 100;
-    const startZ = 45;
+    const startZ = STRAIGHT_LENGTH/2 - 1.5;
     const endZ = startZ - totalDistance;
     const currentDistance = Math.max(0, position.z - endZ);
     set({ distanceRemaining: Math.ceil(currentDistance) });
@@ -71,7 +77,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   resetPlayerPosition: () => {
     set({
-      playerPosition: [0, 1, 45],
+      playerPosition: [OUTER_RADIUS - TRACK_WIDTH/2 + TRACK_WIDTH/16, 1, STRAIGHT_LENGTH/2 - 1.5],
       playerRotation: [0, 0, 0]
     });
   },

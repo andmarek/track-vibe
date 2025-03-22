@@ -168,7 +168,7 @@ export default function Track() {
 
         {/* Starting line */}
         <mesh
-          position={[OUTER_RADIUS - TRACK_WIDTH/2, 0.05, -STRAIGHT_LENGTH/2 + 1]}
+          position={[OUTER_RADIUS - TRACK_WIDTH/2, 0.05, STRAIGHT_LENGTH/2 - 1]}
           rotation-x={-Math.PI / 2}
         >
           <planeGeometry args={[TRACK_WIDTH, 0.2]} />
@@ -180,7 +180,7 @@ export default function Track() {
           const xPos = OUTER_RADIUS - TRACK_WIDTH/2 + i * (TRACK_WIDTH / 8) + (TRACK_WIDTH / 16);
           return (
             <RigidBody type="fixed" key={`block-${i}`}>
-              <group position={[xPos, 0.1, -STRAIGHT_LENGTH/2 + 0.5]}>
+              <group position={[xPos, 0.1, STRAIGHT_LENGTH/2 - 1.5]}>
                 <mesh position={[0, 0.1, 0]}>
                   <boxGeometry args={[0.4, 0.2, 0.4]} />
                   <meshStandardMaterial color="#444444" />

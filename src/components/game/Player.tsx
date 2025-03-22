@@ -14,6 +14,12 @@ const RUNNING_SPEED = 0.1;
 const CAMERA_DISTANCE = 8;
 const INITIAL_CAMERA_HEIGHT = 4;
 
+// Track dimensions from technical drawing (in meters)
+const STRAIGHT_LENGTH = 97.256;
+const INNER_RADIUS = 27.082;
+const OUTER_RADIUS = 40.022;
+const TRACK_WIDTH = OUTER_RADIUS - INNER_RADIUS;
+
 interface Keyframe {
   time: number;
   rotation: [number, number, number];
@@ -131,7 +137,11 @@ export default function Player() {
   useEffect(() => {
     if (gameState === 'READY' && rigidBody.current) {
       // Reset player position and rotation
-      rigidBody.current.setTranslation({ x: 0, y: 1, z: 45 }, true);
+      rigidBody.current.setTranslation({ 
+        x: OUTER_RADIUS - TRACK_WIDTH/2 + TRACK_WIDTH/16, 
+        y: 1, 
+        z: STRAIGHT_LENGTH/2 - 1.5 
+      }, true);
       rigidBody.current.setRotation({ w: 1, x: 0, y: 0, z: 0 }, true);
       playerRef.current?.rotation.set(0, 0, 0);
       resetPlayerPosition();
@@ -161,8 +171,7 @@ export default function Player() {
       cameraHeight.current = Math.max(cameraHeight.current - CAMERA_VERTICAL_SPEED, 2);
     }
 
-    // Calculate movement in world space (independent of camera)
-    let moveX = 0;
+    // For now, only handle forward/backward movement for the 100m sprint
     let moveZ = 0;
 
     if (canMove) {
@@ -172,21 +181,9 @@ export default function Player() {
       if (backward) {
         moveZ = MOVEMENT_SPEED; // Backward is +Z
       }
-      if (left) {
-        moveX = -MOVEMENT_SPEED; // Left is -X
-      }
-      if (right) {
-        moveX = MOVEMENT_SPEED; // Right is +X
-      }
     }
 
-    // Calculate rotation based on movement direction
-    if (moveX !== 0 || moveZ !== 0) {
-      const angle = Math.atan2(moveX, moveZ);
-      playerRef.current?.rotation.set(0, angle, 0);
-    }
-
-    const isCurrentlyMoving = moveX !== 0 || moveZ !== 0;
+    const isCurrentlyMoving = moveZ !== 0;
 
     // Handle animation state changes
     if (isCurrentlyMoving && !isMoving.current) {
@@ -213,7 +210,7 @@ export default function Player() {
       const currentVelocity = rigidBody.current.linvel();
       rigidBody.current.setLinvel(
         { 
-          x: moveX, 
+          x: 0, // No sideways movement for now
           y: currentVelocity.y,
           z: moveZ 
         }, 
@@ -223,7 +220,7 @@ export default function Player() {
       // Update animation time when moving
       animationTime.current = (animationTime.current + RUNNING_SPEED) % 1;
 
-      // Update all limb rotations
+      // Update all limb rotations for running animation
       if (bodyRef.current) {
         bodyRef.current.rotation.set(...interpolateKeyframes(runningAnimation.body.keyframes, animationTime.current));
       }
@@ -275,22 +272,6 @@ export default function Player() {
 
     // Update distance for race tracking
     updateDistance(new Vector3(position.x, position.y, position.z));
-
-    if (canMove) {
-      const impulse = { x: 0, y: 0, z: 0 };
-      const torque = { x: 0, y: 0, z: 0 };
-
-      const speed = 0.5;
-      const rotationSpeed = 0.1;
-
-      if (forward) impulse.z = -speed;
-      if (backward) impulse.z = speed;
-      if (left) torque.y = rotationSpeed;
-      if (right) torque.y = -rotationSpeed;
-
-      rigidBody.current.applyImpulse(impulse, true);
-      rigidBody.current.applyTorqueImpulse(torque, true);
-    }
   });
 
   return (
@@ -298,8 +279,8 @@ export default function Player() {
       ref={rigidBody}
       colliders="ball"
       mass={1}
-      position={[0, 1, 45]}
-      enabledRotations={[false, true, false]}
+      position={[OUTER_RADIUS - TRACK_WIDTH/2 + TRACK_WIDTH/16, 1, STRAIGHT_LENGTH/2 - 1.5]}
+      enabledRotations={[false, false, false]} // Lock all rotations for now
     >
       <group ref={playerRef}>
         {/* Body */}
