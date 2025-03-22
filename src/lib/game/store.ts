@@ -24,6 +24,7 @@ interface GameStore {
   resetGame: () => void;
   updatePlayerPosition: (position: [number, number, number]) => void;
   updatePlayerRotation: (rotation: [number, number, number]) => void;
+  resetPlayerPosition: () => void;
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -68,15 +69,21 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
   },
 
+  resetPlayerPosition: () => {
+    set({
+      playerPosition: [0, 1, 45],
+      playerRotation: [0, 0, 0]
+    });
+  },
+
   resetGame: () => {
     set({
       gameState: 'READY',
       raceStartTime: null,
       raceEndTime: null,
-      distanceRemaining: 100,
-      playerPosition: [0, 1, 45],
-      playerRotation: [0, 0, 0]
+      distanceRemaining: 100
     });
+    get().resetPlayerPosition();
   },
 
   updatePlayerPosition: (position) => set({ playerPosition: position }),

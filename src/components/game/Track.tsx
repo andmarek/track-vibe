@@ -9,6 +9,8 @@ const TRACK_WIDTH = 20; // Width to accommodate 8 lanes
 const TRACK_LENGTH = 100; // Length of the track
 const LANE_WIDTH = 2.5; // Width of each lane
 const NUM_LANES = 8;
+const START_Z = 45; // Starting position Z coordinate
+const END_Z = START_Z - TRACK_LENGTH; // End position Z coordinate
 
 export default function Track() {
   const trackRef = useRef<Mesh>(null);
@@ -20,7 +22,7 @@ export default function Track() {
         <mesh 
           receiveShadow 
           rotation-x={-Math.PI / 2}
-          position={[0, 0, 0]}
+          position={[0, 0, START_Z - TRACK_LENGTH/2]}
         >
           <planeGeometry args={[TRACK_WIDTH, TRACK_LENGTH]} />
           <meshStandardMaterial color="#8B4513" /> {/* Terra cotta color */}
@@ -32,7 +34,7 @@ export default function Track() {
           return (
             <mesh
               key={i}
-              position={[xPos, 0.01, 0]}
+              position={[xPos, 0.01, START_Z - TRACK_LENGTH/2]}
               rotation-x={-Math.PI / 2}
             >
               <planeGeometry args={[0.05, TRACK_LENGTH]} />
@@ -50,7 +52,7 @@ export default function Track() {
               position={[
                 xPos,
                 0.01,
-                -TRACK_LENGTH / 2 + markerIndex * (TRACK_LENGTH / 20) + 1
+                START_Z - TRACK_LENGTH/2 + markerIndex * (TRACK_LENGTH / 20) + 1
               ]}
               rotation-x={-Math.PI / 2}
             >
@@ -62,7 +64,16 @@ export default function Track() {
 
         {/* Starting line */}
         <mesh
-          position={[0, 0.01, -TRACK_LENGTH / 2 + 1]}
+          position={[0, 0.01, START_Z - 1]}
+          rotation-x={-Math.PI / 2}
+        >
+          <planeGeometry args={[TRACK_WIDTH, 0.1]} />
+          <meshStandardMaterial color="white" />
+        </mesh>
+
+        {/* Finish line */}
+        <mesh
+          position={[0, 0.01, END_Z + 1]}
           rotation-x={-Math.PI / 2}
         >
           <planeGeometry args={[TRACK_WIDTH, 0.1]} />
@@ -75,7 +86,7 @@ export default function Track() {
         const xPos = -TRACK_WIDTH / 2 + i * LANE_WIDTH + LANE_WIDTH / 2;
         return (
           <RigidBody type="fixed" key={`block-${i}`}>
-            <group position={[xPos, 0, -TRACK_LENGTH / 2 + 0.5]}>
+            <group position={[xPos, 0, START_Z - 0.5]}>
               <mesh position={[0, 0.1, 0]}>
                 <boxGeometry args={[0.4, 0.2, 0.4]} />
                 <meshStandardMaterial color="#444444" />

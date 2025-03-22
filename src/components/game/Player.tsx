@@ -40,7 +40,7 @@ export default function Player() {
   const rightArmRef = useRef<Group>(null);
   const leftLegRef = useRef<Group>(null);
   const rightLegRef = useRef<Group>(null);
-  const { gameState, updateDistance, updatePlayerPosition, updatePlayerRotation } = useGameStore();
+  const { gameState, updateDistance, updatePlayerPosition, updatePlayerRotation, resetPlayerPosition } = useGameStore();
   const canMove = gameState === 'RACING';
   const cameraHeight = useRef(INITIAL_CAMERA_HEIGHT);
 
@@ -126,6 +126,17 @@ export default function Player() {
     isMoving.current = false;
     cameraAngle.current = 0;
   }, []);
+
+  // Handle game state changes
+  useEffect(() => {
+    if (gameState === 'READY' && rigidBody.current) {
+      // Reset player position and rotation
+      rigidBody.current.setTranslation({ x: 0, y: 1, z: 45 }, true);
+      rigidBody.current.setRotation({ w: 1, x: 0, y: 0, z: 0 }, true);
+      playerRef.current?.rotation.set(0, 0, 0);
+      resetPlayerPosition();
+    }
+  }, [gameState, resetPlayerPosition]);
 
   useFrame(() => {
     if (!rigidBody.current) return;
