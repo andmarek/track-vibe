@@ -171,23 +171,20 @@ export default function Player() {
       cameraHeight.current = Math.max(cameraHeight.current - CAMERA_VERTICAL_SPEED, 2);
     }
 
-    // For now, only handle forward/backward movement for the 100m sprint
+    // Calculate movement direction based on camera angle
+    let moveX = 0;
     let moveZ = 0;
 
-    if (canMove) {
-      if (forward) {
-        moveZ = -MOVEMENT_SPEED; // Forward is -Z
-      }
-      if (backward) {
-        moveZ = MOVEMENT_SPEED; // Backward is +Z
-      }
+    if (canMove && forward) {
+      // Move in the direction the camera is facing
+      moveX = Math.sin(-cameraAngle.current) * MOVEMENT_SPEED;
+      moveZ = Math.cos(-cameraAngle.current) * -MOVEMENT_SPEED;
     }
 
-    const isCurrentlyMoving = moveZ !== 0;
+    const isCurrentlyMoving = moveX !== 0 || moveZ !== 0;
 
     // Handle animation state changes
     if (isCurrentlyMoving && !isMoving.current) {
-      // Only reset animation time when starting from a complete stop
       if (animationTime.current >= 1) {
         animationTime.current = 0;
       }
@@ -196,7 +193,7 @@ export default function Player() {
       isMoving.current = false;
     }
 
-    // Update camera to follow player
+    // Update camera position to follow player
     const cameraOffset = new Vector3(
       Math.sin(cameraAngle.current) * CAMERA_DISTANCE,
       cameraHeight.current,
@@ -210,12 +207,18 @@ export default function Player() {
       const currentVelocity = rigidBody.current.linvel();
       rigidBody.current.setLinvel(
         { 
-          x: 0, // No sideways movement for now
+          x: moveX,
           y: currentVelocity.y,
           z: moveZ 
         }, 
         true
       );
+
+      // Make the player face the movement direction
+      if (playerRef.current) {
+        const angle = Math.atan2(moveX, -moveZ);
+        playerRef.current.rotation.y = angle;
+      }
       
       // Update animation time when moving
       animationTime.current = (animationTime.current + RUNNING_SPEED) % 1;
