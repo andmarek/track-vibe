@@ -9,9 +9,10 @@ import { useKeyboardControls } from '@react-three/drei';
 
 const MOVEMENT_SPEED = 5;
 const CAMERA_ROTATION_SPEED = 0.02;
+const CAMERA_VERTICAL_SPEED = 0.5;
 const RUNNING_SPEED = 0.1;
 const CAMERA_DISTANCE = 8;
-const CAMERA_HEIGHT = 4;
+const INITIAL_CAMERA_HEIGHT = 4;
 
 interface Keyframe {
   time: number;
@@ -41,6 +42,7 @@ export default function Player() {
   const rightLegRef = useRef<Group>(null);
   const { gameState, updateDistance, updatePlayerPosition, updatePlayerRotation } = useGameStore();
   const canMove = gameState === 'RACING';
+  const cameraHeight = useRef(INITIAL_CAMERA_HEIGHT);
 
   const [, getKeys] = useKeyboardControls();
 
@@ -128,16 +130,24 @@ export default function Player() {
   useFrame(() => {
     if (!rigidBody.current) return;
 
-    const { forward, backward, left, right } = getKeys();
+    const { forward, backward, left, right, cameraLeft, cameraRight, cameraUp, cameraDown } = getKeys();
     const position = rigidBody.current.translation();
     const rotation = rigidBody.current.rotation();
 
     // Handle camera rotation with arrow keys
-    if (getKeys().leftArrow) {
+    if (cameraLeft) {
       cameraAngle.current += CAMERA_ROTATION_SPEED;
     }
-    if (getKeys().rightArrow) {
+    if (cameraRight) {
       cameraAngle.current -= CAMERA_ROTATION_SPEED;
+    }
+
+    // Handle camera height with up/down arrows
+    if (cameraUp) {
+      cameraHeight.current = Math.min(cameraHeight.current + CAMERA_VERTICAL_SPEED, 10);
+    }
+    if (cameraDown) {
+      cameraHeight.current = Math.max(cameraHeight.current - CAMERA_VERTICAL_SPEED, 2);
     }
 
     // Calculate movement in world space (independent of camera)
@@ -181,7 +191,7 @@ export default function Player() {
     // Update camera to follow player
     const cameraOffset = new Vector3(
       Math.sin(cameraAngle.current) * CAMERA_DISTANCE,
-      CAMERA_HEIGHT,
+      cameraHeight.current,
       Math.cos(cameraAngle.current) * CAMERA_DISTANCE
     );
     camera.position.copy(new Vector3(position.x, position.y, position.z).add(cameraOffset));

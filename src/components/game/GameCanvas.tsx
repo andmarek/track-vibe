@@ -31,12 +31,14 @@ export default function GameCanvas() {
     <div className="w-full h-screen relative">
       <KeyboardControls
         map={[
-          { name: 'forward', keys: ['ArrowUp', 'w', 'W'] },
-          { name: 'backward', keys: ['ArrowDown', 's', 'S'] },
-          { name: 'left', keys: ['ArrowLeft', 'a', 'A'] },
-          { name: 'right', keys: ['ArrowRight', 'd', 'D'] },
-          { name: 'leftArrow', keys: ['ArrowLeft'] },
-          { name: 'rightArrow', keys: ['ArrowRight'] },
+          { name: 'forward', keys: ['w', 'W'] },
+          { name: 'backward', keys: ['s', 'S'] },
+          { name: 'left', keys: ['a', 'A'] },
+          { name: 'right', keys: ['d', 'D'] },
+          { name: 'cameraLeft', keys: ['ArrowLeft'] },
+          { name: 'cameraRight', keys: ['ArrowRight'] },
+          { name: 'cameraUp', keys: ['ArrowUp'] },
+          { name: 'cameraDown', keys: ['ArrowDown'] },
         ]}
       >
         <Canvas
@@ -81,7 +83,7 @@ export default function GameCanvas() {
                 maxDistance={100}
                 maxPolarAngle={Math.PI / 2.5}
                 minPolarAngle={Math.PI / 4}
-                enabled={false}
+                enabled={true}
               />
             </Physics>
           </Suspense>
