@@ -37,7 +37,7 @@ export default function Track() {
           {/* Right straight */}
           <mesh 
             receiveShadow 
-            position={[OUTER_RADIUS - TRACK_WIDTH/2, -0.01, 0]} 
+            position={[OUTER_RADIUS - TRACK_WIDTH/2, 0.01, 0]} 
             rotation-x={-Math.PI / 2}
           >
             <planeGeometry args={[TRACK_WIDTH, STRAIGHT_LENGTH]} />
@@ -47,7 +47,7 @@ export default function Track() {
           {/* Left straight */}
           <mesh 
             receiveShadow 
-            position={[-OUTER_RADIUS + TRACK_WIDTH/2, -0.01, 0]} 
+            position={[-OUTER_RADIUS + TRACK_WIDTH/2, 0.01, 0]} 
             rotation-x={-Math.PI / 2}
           >
             <planeGeometry args={[TRACK_WIDTH, STRAIGHT_LENGTH]} />
@@ -57,7 +57,7 @@ export default function Track() {
           {/* Bottom curve */}
           <mesh
             receiveShadow
-            position={[0, -0.01, STRAIGHT_LENGTH/2]}
+            position={[0, 0.01, STRAIGHT_LENGTH/2]}
             rotation={[-Math.PI / 2, 0, Math.PI]}
           >
             <ringGeometry 
@@ -76,7 +76,7 @@ export default function Track() {
           {/* Top curve */}
           <mesh
             receiveShadow
-            position={[0, -0.01, -STRAIGHT_LENGTH/2]}
+            position={[0, 0.01, -STRAIGHT_LENGTH/2]}
             rotation={[-Math.PI / 2, 0, 0]}
           >
             <ringGeometry 
@@ -110,7 +110,7 @@ export default function Track() {
             <group key={`lane-${i}`}>
               {/* Right straight lane line */}
               <mesh
-                position={[OUTER_RADIUS - TRACK_WIDTH/2 + xPos, 0.01, 0]}
+                position={[OUTER_RADIUS - TRACK_WIDTH/2 + xPos, 0.02, 0]}
                 rotation-x={-Math.PI / 2}
               >
                 <planeGeometry args={[0.05, STRAIGHT_LENGTH]} />
@@ -119,7 +119,7 @@ export default function Track() {
 
               {/* Left straight lane line */}
               <mesh
-                position={[-OUTER_RADIUS + TRACK_WIDTH/2 + xPos, 0.01, 0]}
+                position={[-OUTER_RADIUS + TRACK_WIDTH/2 + xPos, 0.02, 0]}
                 rotation-x={-Math.PI / 2}
               >
                 <planeGeometry args={[0.05, STRAIGHT_LENGTH]} />
@@ -131,7 +131,7 @@ export default function Track() {
 
         {/* Starting line */}
         <mesh
-          position={[OUTER_RADIUS - TRACK_WIDTH/2, 0.01, -STRAIGHT_LENGTH/2 + 1]}
+          position={[OUTER_RADIUS - TRACK_WIDTH/2, 0.02, -STRAIGHT_LENGTH/2 + 1]}
           rotation-x={-Math.PI / 2}
         >
           <planeGeometry args={[TRACK_WIDTH, 0.1]} />
